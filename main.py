@@ -67,7 +67,7 @@ else:
         
 
 # rolling window with size 5
-max_min = 5
+max_min = 2
 max_amount = 3
 
 
@@ -98,11 +98,11 @@ while right_index < len(arr):
     del acc[0]
     if len(acc) == 0:
         # repeat initial fill
-        while len(acc) < max_amount and (len(acc) == 0 or arr[right_index] - acc[0] < timedelta(minutes=max_min)):
+        while right_index < len(arr) and len(acc) < max_amount and (len(acc) == 0 or arr[right_index] - acc[0] < timedelta(minutes=max_min)):
             acc.append(arr[right_index])
             right_index += 1
 
-    while len(acc) < max_amount and (len(acc) > 0 and arr[right_index] - acc[0] < timedelta(minutes=max_min)):
+    while right_index < len(arr) and len(acc) < max_amount and (len(acc) > 0 and arr[right_index] - acc[0] < timedelta(minutes=max_min)):
         acc.append(arr[right_index])
         right_index += 1
 
