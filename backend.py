@@ -1,10 +1,12 @@
 import os
 from collections import defaultdict
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import json
 from dataclasses import dataclass
+import io
 import logging
-logger = logging.getLogger(__file__)
+logger = logging.getLogger(__name__)
+logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
 
 import requests
 from flask import Flask
@@ -13,6 +15,7 @@ from flask import Flask
 ACCESS_TOKEN = os.getenv("ACCESS_TOKEN")
 REPOSITORIES = os.getenv("REPOSITORIES").split('|')
 MAX_REPOS = int(os.getenv("MAX_REPOSITORIES_AMOUNT", 5)) 
+UPDATE_FREQUENCY = int(os.getenv("LATENCY_MINUTES", 60))
 assert len(REPOSITORIES) <= MAX_REPOS
 
 # constants
@@ -81,9 +84,6 @@ app = Flask(__name__)
 def test_endpoint():
     return {"server": "running"}
 
-# @app.post("/add_repo/<path:url>")
-# def add_repo(url: str):
-
 
 @app.get("/stats")
 def get_stats():
@@ -93,27 +93,47 @@ def get_stats():
         OwnerRepoPair(owner=repo_url.split('/')[-2], repo=repo_url.split('/')[-1])
         for repo_url in REPOSITORIES
     ]
-    logger.info(owner_repo_pairs)
+    # logger.info(owner_repo_pairs)
     ## download events from GitHub API
     for pair_obj in owner_repo_pairs:
-        logger.info(f"Loading data for {pair_obj.owner}/{pair_obj.repo}")
-        resp = requests.get(
-            f"{BASE_API_URL}/{pair_obj.owner}/{pair_obj.repo}/events",
-            headers={
-                "Accept": "application/vnd.github+json",
-                "X-GitHub-Api-Version": "2022-11-28",
-                "Authorization": f"Bearer {ACCESS_TOKEN}"
-            }
-        )
-        resp_dict = resp.json()
-        for obj in resp_dict:
-            master_dict[pair_obj.repo][obj[TYPE_KEY]].append(
-                datetime.fromisoformat(obj[DT_KEY])
+        try:
+            with open(os.path.join(DATA_FOLDER_NAME, f"{pair_obj.owner}-{pair_obj.repo}_last_update.txt"), "w", encoding="utf-8") as f:
+                last_update = datetime.fromisoformat(f.readline().strip('\n'))
+                if last_update + timedelta(minutes=UPDATE_FREQUENCY) < datetime.now(timezone.utc):
+                    raise Exception("Time to update.")
+                else:
+                    logger.info("Loading from JSON")
+                    with open(os.path.join(DATA_FOLDER_NAME, f"{pair_obj.owner}-{pair_obj.repo}_data.json"), "w", encoding="utf-8") as f:
+                        master_dict[pair_obj.repo] = json.load(f)
+        except:
+            logger.info(f"Loading data for {pair_obj.owner}/{pair_obj.repo} from API")
+            resp = requests.get(
+                f"{BASE_API_URL}/{pair_obj.owner}/{pair_obj.repo}/events",
+                headers={
+                    "Accept": "application/vnd.github+json",
+                    "X-GitHub-Api-Version": "2022-11-28",
+                    "Authorization": f"Bearer {ACCESS_TOKEN}"
+                }
             )
+            resp_dict = resp.json()
+            for obj in resp_dict:
+                master_dict[pair_obj.repo][obj[TYPE_KEY]].append(
+                    datetime.fromisoformat(obj[DT_KEY])
+                )
+            
+            with open(os.path.join(DATA_FOLDER_NAME, f"{pair_obj.owner}-{pair_obj.repo}_last_update.txt"), "w", encoding="utf-8") as f:
+                print(datetime.now().isoformat(), file=f)
+            with open(os.path.join(DATA_FOLDER_NAME, f"{pair_obj.owner}-{pair_obj.repo}_data.json"), "w", encoding="utf-8") as f:
+                print(json.dumps(
+                    {
+                        key: list(map(str, master_dict[pair_obj.repo]))
+                        for key in master_dict[pair_obj.repo].keys()
+                    }
+                ), file=f)
 
         for repo in master_dict.keys():
             for event_type in master_dict[repo].keys():
-                print(f"Solving for {repo} - {event_type}")
+                logger.info(f"Solving for {repo} - {event_type}")
                 master_dict[repo][event_type].sort()
                 ### custom rolling window ###
                 window_differences: list[timedelta] = get_rolling_window_results(
