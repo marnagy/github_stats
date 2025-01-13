@@ -31,7 +31,7 @@ DT_KEY = "created_at"
 master_dict = defaultdict(lambda: defaultdict(lambda: list()))
 
 # def main():
-load_json = True
+load_json = False
 if not load_json:
     env_dict = load_env()
     owner_repo_pairs = [
