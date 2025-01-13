@@ -89,6 +89,8 @@ while len(acc) < max_amount and (len(acc) == 0 or arr[right_index] - acc[0] < ti
 # average difference
 differences = [ dt2-dt1 for dt1, dt2 in zip(acc, acc[1:])] if len(acc) > 1 else []
 result = sum(differences, timedelta(minutes=0))
+if len(differences) > 0:
+    result = result / len(differences)
 print(result)
 
 # step
@@ -109,6 +111,8 @@ while right_index < len(arr):
     # average difference
     differences = [ dt2-dt1 for dt1, dt2 in zip(acc, acc[1:])] if len(acc) > 1 else []
     result = sum(differences, timedelta(minutes=0))
+    if len(differences) > 0:
+        result = result / len(differences)
     print(result)
     
     # print(acc)
