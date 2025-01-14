@@ -53,3 +53,19 @@ When running `http://[REST API's IP address]:8000/stats` you receive the stats a
 }
 
 ```
+
+------------
+
+## Possible improvements
+
+1. Use database instead of a folder
+
+This was not implemented since it take a comparatively long time to implement.
+
+2. Use suitable library like `pandas` or `numpy`
+
+This was not used since I wass not able to find a solution that would use thesse modules.
+
+3. Use of asynchronous API calling to speed up retrieval of the data
+
+This approach yields faster response time the more repositories you want to monitor.
