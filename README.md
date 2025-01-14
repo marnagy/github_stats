@@ -37,7 +37,7 @@ When running `http://[REST API's IP address]:8000/stats` you receive the stats a
 
 ## Response JSON structure
 
-``` json
+```json
 {
     repo_name1: {
         event_name1: [
