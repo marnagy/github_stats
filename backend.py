@@ -17,6 +17,8 @@ REPOSITORIES = os.getenv("REPOSITORIES").split('|')
 MAX_REPOS = int(os.getenv("MAX_REPOSITORIES_AMOUNT", 5)) 
 UPDATE_FREQUENCY = int(os.getenv("LATENCY_MINUTES", 60))
 assert len(REPOSITORIES) <= MAX_REPOS
+MAX_DAYS = int(os.getenv("MAX_DAYS", 7)) 
+MAX_WINDOW_SIZE = int(os.getenv("MAX_WINDOW_SIZE", 500)) 
 
 # constants
 TYPE_KEY = "type"
@@ -24,8 +26,6 @@ DT_KEY = "created_at"
 DATA_FOLDER_NAME = "data"
 CURRENT_REPOS_FILE_NAME = "current_repos.json"
 BASE_API_URL = "https://api.github.com/repos"
-MAX_DAYS = 7
-MAX_WINDOW_SIZE = 3
 
 @dataclass(frozen=True, eq=True, kw_only=True)
 class OwnerRepoPair:
