@@ -33,4 +33,23 @@ The main script for running the REST API is in file `backend.py`.
 
 Test endpoint to check if the API is running: `http://[REST API's IP address]:8000/test`
 
-When running `http://[REST API's IP address]:8000/stats` you receive the stats about the repositories in the ENV variable `REPOSITORIES`
+When running `http://[REST API's IP address]:8000/stats` you receive the stats about the repositories in the ENV variable `REPOSITORIES` in <b>seconds</b>.
+
+## Response JSON structure
+
+``` json
+{
+    repo_name1: {
+        event_name1: [
+            <values from the rolling window>
+        ],
+        event_name2: [
+            <values from the rolling window>
+        ]
+    },
+    repo_name2:{
+        ...
+    }
+}
+
+```
