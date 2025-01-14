@@ -62,9 +62,9 @@ When running `http://[REST API's IP address]:8000/stats` you receive the stats a
 
 This was not implemented since it take a comparatively long time to implement.
 
-2. Use suitable library like `pandas` or `numpy`
+2. Use suitable library like `pandas` or `numpy` to compute the rolling window
 
-This was not used since I wass not able to find a solution that would use thesse modules.
+This was not used since I wass not able to find a solution that would use these modules.
 
 3. Use of asynchronous API calling to speed up retrieval of the data
 
